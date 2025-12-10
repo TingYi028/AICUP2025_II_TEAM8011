@@ -10,6 +10,7 @@ This project implements a robust object detection pipeline using YOLOv11 with 5-
 
 ## Repository Structure
 
+```
 AICUP2025_II_TEAM8011/
 ├── datasets/
 │   ├── fixed_yolo.py          # YOLO dataset format correction utilities
@@ -19,6 +20,7 @@ AICUP2025_II_TEAM8011/
 ├── ultralytics/               # Custom Ultralytics YOLO implementation
 ├── upload/                    # Model outputs and submission files
 └── train_yolo_fold.py        # Main training script for k-fold CV
+```
 
 
 ## Features
@@ -41,8 +43,9 @@ AICUP2025_II_TEAM8011/
 
 ## Requirements
 
-bash
+```bash
 pip install ultralytics
+```
 
 Additional dependencies:
 
@@ -57,27 +60,31 @@ Additional dependencies:
 
 Analyze pixel distribution and dataset statistics:
 
-bash
+```bash
 python datasets/pixel_distribution.py
+```
 
 
 ### 2. Format Correction
 
 Fix YOLO annotation format if needed:
 
-bash
+```bash
 python datasets/fixed_yolo.py
+```
 
 
 ### 3. Create K-Fold Splits
 
 Generate 5-fold cross-validation splits:
 
-bash
+```bash
 python datasets/spilit_fold.py
+```
 
 This creates the following structure:
 
+```
 datasets/all_yolo_data/yolo_5fold/
 ├── fold_1/
 │   └── baseline.yaml
@@ -89,6 +96,7 @@ datasets/all_yolo_data/yolo_5fold/
 │   └── baseline.yaml
 └── fold_5/
     └── baseline.yaml
+```
 
 
 ## Training
@@ -97,8 +105,9 @@ datasets/all_yolo_data/yolo_5fold/
 
 Train all folds sequentially:
 
-bash
+```bash
 python train_yolo_fold.py
+```
 
 
 ### Training Configuration
@@ -120,9 +129,9 @@ The training script uses the following hyperparameters:
 
 ### Custom Training
 
-Modify train_yolo_fold.py to adjust hyperparameters:
+Modify `train_yolo_fold.py` to adjust hyperparameters:
 
-python
+```python
 results = model.train(
     data=f"./datasets/all_yolo_data/yolo_5fold/fold_{fold}/baseline.yaml",
     epochs=100,
@@ -130,18 +139,21 @@ results = model.train(
     imgsz=768,
     # ... other parameters
 )
+```
 
 
 ## Model Outputs
 
 Trained models are saved to:
 
+```
 /root/aicup2025_II/upload/model/detect/all/yolo11s_fold{1-4}/
+```
 
 Each fold directory contains:
 
-- weights/best.pt - Best checkpoint based on validation metrics
-- weights/last.pt - Final epoch checkpoint
+- `weights/best.pt` - Best checkpoint based on validation metrics
+- `weights/last.pt` - Final epoch checkpoint
 - Training logs and metrics
 - Validation predictions
 
@@ -152,7 +164,7 @@ The 5-fold cross-validation provides robust performance estimation. Average metr
 
 ## Inference
 
-python
+```python
 from ultralytics import YOLO
 
 # Load trained model
@@ -165,3 +177,7 @@ results = model.predict(
     conf=0.25,  # confidence threshold
     iou=0.45    # NMS IoU threshold
 )
+```
+
+
+
