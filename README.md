@@ -174,8 +174,8 @@ model = YOLO('path/to/best.pt')
 results = model.predict(
     source='path/to/test/images',
     imgsz=768,
-    conf=0.25,  # confidence threshold
-    iou=0.45    # NMS IoU threshold
+    conf=0.1,  # confidence threshold
+    iou=0.6    # NMS IoU threshold
 )
 ```
 
