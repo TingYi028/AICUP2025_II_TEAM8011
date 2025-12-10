@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from pathlib import Path
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 
 def read_yolo_label(label_path, img_width, img_height):
@@ -14,7 +15,7 @@ def read_yolo_label(label_path, img_width, img_height):
     if not os.path.exists(label_path):
         return boxes
 
-    with open(label_path, 'r') as f:
+    with open(label_path, 'r', encoding='utf-8') as f:
         for line in f:
             parts = line.strip().split()
             if len(parts) < 5:
@@ -107,13 +108,53 @@ def calculate_statistics(pixels):
     return stats
 
 
+def plot_distribution(pixels, stats, save_path='pixel_distribution.png'):
+    """
+    繪製並保存像素分佈直方圖
+    """
+    print(f"正在繪製分佈圖，請稍候... (數據量: {len(pixels):,})")
+
+    plt.figure(figsize=(12, 6))
+
+    # 設置風格
+    plt.style.use('ggplot')
+
+    # 繪製直方圖 (使用 bins=256 對應 0-255 的像素值)
+    # density=True 表示顯示頻率密度，這樣數據量大時 y 軸數值不會過大
+    plt.hist(pixels, bins=256, range=(0, 255), density=True,
+             color='#4F81BD', alpha=0.7, label='Pixel Density')
+
+    # 繪製統計線
+    plt.axvline(stats['平均值'], color='red', linestyle='--', linewidth=2,
+                label=f"Mean: {stats['平均值']:.2f}")
+    plt.axvline(stats['中位數'], color='green', linestyle='-', linewidth=2,
+                label=f"Median: {stats['中位數']:.2f}")
+
+    # 標註百分位
+    plt.axvline(stats['0.5百分位'], color='orange', linestyle=':', alpha=0.6)
+    plt.axvline(stats['99.5百分位'], color='orange', linestyle=':', alpha=0.6,
+                label='0.5% - 99.5% Range')
+
+    plt.title('Pixel Intensity Distribution within YOLO Bounding Boxes', fontsize=14)
+    plt.xlabel('Pixel Value (0-255)', fontsize=12)
+    plt.ylabel('Density', fontsize=12)
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.xlim(0, 255)
+
+    # 保存圖片
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()  # 關閉圖表釋放內存
+    print(f"分佈圖已保存至: {save_path}")
+
+
 # ==================== 主程序 ====================
 if __name__ == "__main__":
     # 設定數據集根目錄（請根據實際情況修改）
     dataset_root = './yolo'
 
     print("=" * 60)
-    print("YOLO 數據集 Bounding Box 內像素統計")
+    print("YOLO 數據集 Bounding Box 內像素統計與視覺化")
     print("=" * 60)
 
     # 檢查目錄是否存在
@@ -145,9 +186,9 @@ if __name__ == "__main__":
                     print(f"{key:15s}: {value:,}")
             print("=" * 60)
 
-            # 保存結果到文件
-            output_file = 'bbox_pixel_statistics.txt'
-            with open(output_file, 'w', encoding='utf-8') as f:
+            # 保存統計文字結果
+            output_txt = 'bbox_pixel_statistics.txt'
+            with open(output_txt, 'w', encoding='utf-8') as f:
                 f.write("YOLO 數據集 Bounding Box 內像素統計\n")
                 f.write("=" * 60 + "\n")
                 for key, value in stats.items():
@@ -155,8 +196,16 @@ if __name__ == "__main__":
                         f.write(f"{key}: {value:.2f}\n")
                     else:
                         f.write(f"{key}: {value:,}\n")
+            print(f"\n文字報告已保存至: {output_txt}")
 
-            print(f"\n結果已保存至: {output_file}")
+            # ================= 新增：繪製分佈圖 =================
+            output_img = 'bbox_pixel_distribution.png'
+            try:
+                plot_distribution(pixels, stats, output_img)
+            except Exception as e:
+                print(f"繪圖時發生錯誤: {e}")
+            # ===================================================
+
         else:
             print("\n錯誤: 未能收集到任何像素數據")
             print("請檢查:")
@@ -164,4 +213,4 @@ if __name__ == "__main__":
             print("2. images 和 labels 文件夾是否存在")
             print("3. 標註文件是否與圖像文件對應")
 
-print("\n代碼已生成完成！")
+print("\n程式執行完畢！")
